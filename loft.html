@@ -1,0 +1,1003 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>LOFT — Gestione Prenotazioni</title>
+<style>
+  :root{
+    --yellow-50:#FFFBEB;
+    --yellow-100:#FEF3C7;
+    --yellow-300:#FCD34D;
+    --yellow-400:#FBBF24;
+    --yellow-500:#F59E0B;
+    --green-50:#ECFDF5;
+    --green-100:#D1FAE5;
+    --green-300:#6EE7B7;
+    --green-500:#10B981;
+    --green-600:#059669;
+    --green-700:#047857;
+    --ink:#0F2A1D;
+    --muted:#5B6B64;
+    --line:#E6EEE9;
+    --bg:#F7FBF7;
+    --card:#FFFFFF;
+    --shadow: 0 10px 30px rgba(16,185,129,.08), 0 2px 6px rgba(0,0,0,.04);
+    --red-50:#FEF2F2;
+    --red-500:#EF4444;
+    --red-700:#B91C1C;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--ink)}
+  body{
+    background:
+      radial-gradient(1200px 600px at -10% -20%, var(--yellow-100) 0%, transparent 60%),
+      radial-gradient(1000px 500px at 110% 10%, var(--green-100) 0%, transparent 60%),
+      var(--bg);
+    min-height:100vh;
+  }
+
+  /* HEADER */
+  header{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:22px 40px;
+    background:linear-gradient(135deg,var(--green-600),var(--green-500));
+    color:#fff;
+    box-shadow:0 4px 20px rgba(5,150,105,.25);
+  }
+  .logo{display:flex;align-items:center;gap:14px}
+  .logo-badge{
+    width:46px;height:46px;border-radius:12px;
+    background:linear-gradient(135deg,var(--yellow-300),var(--yellow-500));
+    display:grid;place-items:center;font-size:24px;
+    box-shadow:0 4px 12px rgba(245,158,11,.4);
+  }
+  .logo-text h1{margin:0;font-size:26px;font-weight:800;letter-spacing:3px}
+  .logo-text .sub{font-size:11px;font-weight:400;opacity:.85;letter-spacing:1.5px}
+  .header-right{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+  .header-btn{
+    background:rgba(255,255,255,.18);
+    border:1px solid rgba(255,255,255,.3);
+    color:#fff;padding:9px 16px;border-radius:10px;
+    font-size:13px;font-weight:600;cursor:pointer;
+    backdrop-filter:blur(6px);
+    display:inline-flex;align-items:center;gap:6px;
+    transition:all .2s ease;font-family:inherit;
+  }
+  .header-btn:hover{background:rgba(255,255,255,.28)}
+  .header-btn.accent{
+    background:var(--yellow-400);color:var(--ink);border-color:var(--yellow-400);
+  }
+  .user-chip{
+    background:rgba(255,255,255,.15);
+    border:1px solid rgba(255,255,255,.25);
+    padding:8px 14px;border-radius:999px;font-size:13px;
+  }
+
+  /* LAYOUT */
+  main{padding:28px 40px;max-width:1400px;margin:0 auto}
+  .page-title{
+    display:flex;align-items:center;justify-content:space-between;
+    margin-bottom:22px;flex-wrap:wrap;gap:14px;
+  }
+  .page-title h2{font-size:24px;margin:0;font-weight:700}
+  .page-title p{margin:4px 0 0;color:var(--muted);font-size:14px}
+  .quick-stats{display:flex;gap:12px;flex-wrap:wrap}
+  .stat{
+    background:var(--card);border-radius:14px;padding:12px 18px;
+    box-shadow:var(--shadow);min-width:130px;
+    border:1px solid var(--line);
+  }
+  .stat .label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px}
+  .stat .value{font-size:22px;font-weight:700;margin-top:2px}
+  .stat.yellow .value{color:var(--yellow-500)}
+  .stat.green .value{color:var(--green-600)}
+
+  /* GRID */
+  .grid{display:grid;grid-template-columns: 1.1fr 1fr;gap:22px}
+  @media (max-width: 1000px){ .grid{grid-template-columns:1fr} }
+
+  .card{
+    background:var(--card);border-radius:18px;padding:22px;
+    box-shadow:var(--shadow);border:1px solid var(--line);
+  }
+  .card h3{margin:0 0 4px;font-size:17px;font-weight:700}
+  .card .sub{color:var(--muted);font-size:13px;margin-bottom:16px}
+
+  /* FORM */
+  .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .field{display:flex;flex-direction:column;gap:5px}
+  .field.full{grid-column:1/-1}
+  .field label{font-size:12px;font-weight:600;color:var(--ink)}
+  .field input, .field select, .field textarea{
+    padding:11px 13px;border-radius:10px;
+    border:1.5px solid var(--line);background:#FAFDFB;
+    font-size:14px;font-family:inherit;color:var(--ink);
+    transition:all .2s ease;
+  }
+  .field input:focus, .field select:focus, .field textarea:focus{
+    outline:none;border-color:var(--green-500);
+    background:#fff;box-shadow:0 0 0 4px rgba(16,185,129,.12);
+  }
+  .field textarea{resize:vertical;min-height:60px}
+
+  /* LOCATION CHIPS */
+  .location-chips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+  .loc-chip{
+    padding:7px 14px;border-radius:999px;
+    background:#F0FBF5;border:1.5px solid var(--line);
+    font-size:13px;font-weight:600;cursor:pointer;
+    transition:all .15s ease;display:inline-flex;align-items:center;gap:6px;
+    color:var(--ink);
+  }
+  .loc-chip:hover{border-color:var(--green-300)}
+  .loc-chip.active{
+    background:var(--green-500);color:#fff;border-color:var(--green-500);
+  }
+
+  /* TABLES MAP */
+  .tables-section{margin-top:20px}
+  .tables-legend{display:flex;gap:14px;margin-bottom:12px;font-size:12px;flex-wrap:wrap}
+  .legend-item{display:flex;align-items:center;gap:6px;color:var(--muted)}
+  .legend-dot{width:12px;height:12px;border-radius:4px}
+  .legend-dot.free{background:var(--green-500)}
+  .legend-dot.busy{background:var(--yellow-400)}
+  .legend-dot.closed{background:#CBD5E0}
+
+  .tables-grid{
+    display:grid;grid-template-columns:repeat(auto-fill,minmax(85px,1fr));gap:9px;
+  }
+  .table-cell{
+    aspect-ratio:1;border-radius:12px;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    font-weight:700;font-size:13px;cursor:pointer;
+    transition:transform .15s ease, box-shadow .15s ease;
+    border:2px solid transparent;position:relative;
+  }
+  .table-cell:hover{transform:translateY(-2px);box-shadow:0 6px 14px rgba(0,0,0,.08)}
+  .table-cell.free{background:var(--green-100);color:var(--green-700);border-color:var(--green-300)}
+  .table-cell.busy{background:var(--yellow-100);color:#92400E;border-color:var(--yellow-300)}
+  .table-cell.closed{background:#F1F5F9;color:#94A3B8;border-color:#E2E8F0;cursor:not-allowed;opacity:.7}
+  .table-cell .seats{font-size:10px;font-weight:500;opacity:.8;margin-top:2px}
+  .table-cell .loc-icon{position:absolute;top:4px;right:4px;font-size:10px}
+  .table-cell.selected{outline:3px solid var(--green-600);outline-offset:2px}
+
+  /* BUTTONS */
+  .btn{
+    padding:11px 20px;border-radius:10px;border:none;
+    font-size:13px;font-weight:600;cursor:pointer;
+    transition:all .2s ease;font-family:inherit;
+    display:inline-flex;align-items:center;gap:7px;
+  }
+  .btn-primary{
+    background:linear-gradient(135deg,var(--green-500),var(--green-600));
+    color:#fff;box-shadow:0 6px 16px rgba(16,185,129,.35);
+  }
+  .btn-primary:hover{transform:translateY(-1px);box-shadow:0 8px 20px rgba(16,185,129,.45)}
+  .btn-primary:disabled{opacity:.6;cursor:not-allowed;transform:none}
+  .btn-ghost{background:transparent;color:var(--green-700);border:1.5px solid var(--green-500)}
+  .btn-ghost:hover{background:var(--green-50)}
+  .btn-danger{background:transparent;color:var(--red-700);border:1.5px solid var(--red-500)}
+  .btn-danger:hover{background:var(--red-50)}
+
+  .form-actions{display:flex;justify-content:space-between;gap:10px;margin-top:16px;flex-wrap:wrap}
+  .form-actions-right{display:flex;gap:8px;margin-left:auto}
+
+  /* RESERVATIONS LIST */
+  .reservations-list{display:flex;flex-direction:column;gap:10px;max-height:600px;overflow-y:auto;padding-right:6px}
+  .reservations-list::-webkit-scrollbar{width:6px}
+  .reservations-list::-webkit-scrollbar-thumb{background:var(--green-300);border-radius:3px}
+
+  .reservation{
+    display:flex;align-items:center;gap:12px;
+    padding:13px;border-radius:12px;
+    background:linear-gradient(135deg,#FAFDFB,#F0FBF5);
+    border:1px solid var(--line);
+    transition:all .2s ease;
+    animation: slideIn .3s ease;
+  }
+  @keyframes slideIn{from{opacity:0;transform:translateX(-10px)}to{opacity:1;transform:translateX(0)}}
+  .reservation:hover{border-color:var(--green-300);box-shadow:0 4px 12px rgba(16,185,129,.08)}
+  .time-badge{
+    background:var(--yellow-400);color:var(--ink);
+    padding:8px 12px;border-radius:10px;font-weight:700;font-size:13px;
+    min-width:58px;text-align:center;
+  }
+  .res-info{flex:1;min-width:0}
+  .res-name{font-weight:700;font-size:14px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  .res-meta{font-size:12px;color:var(--muted);margin-top:3px;display:flex;gap:10px;flex-wrap:wrap}
+  .res-tags{display:flex;gap:5px;margin-top:6px;flex-wrap:wrap}
+  .tag{font-size:10px;padding:3px 7px;border-radius:6px;font-weight:600}
+  .tag.allergy{background:#FEE2E2;color:#991B1B}
+  .tag.intolerance{background:var(--yellow-100);color:#92400E}
+  .tag.note{background:var(--green-100);color:var(--green-700)}
+  .tag.table-tag{background:var(--green-600);color:#fff}
+  .tag.joined{background:#A78BFA;color:#fff}
+  .tag.location{background:#E0E7FF;color:#3730A3}
+  .res-actions{display:flex;gap:4px}
+  .icon-btn{
+    background:transparent;border:none;cursor:pointer;
+    color:#94A3B8;font-size:15px;padding:6px 8px;border-radius:6px;
+    transition:all .15s ease;
+  }
+  .icon-btn:hover{background:var(--green-50);color:var(--green-700)}
+  .icon-btn.delete:hover{background:var(--red-50);color:var(--red-700)}
+
+  .empty-state{text-align:center;padding:40px 20px;color:var(--muted)}
+  .empty-state .icon{font-size:48px;margin-bottom:10px}
+
+  /* MODAL */
+  .modal-overlay{
+    position:fixed;inset:0;background:rgba(15,42,29,.55);
+    display:none;align-items:center;justify-content:center;
+    z-index:100;backdrop-filter:blur(4px);
+    animation: fadeIn .25s ease;
+  }
+  .modal-overlay.active{display:flex}
+  @keyframes fadeIn{from{opacity:0}to{opacity:1}}
+  .modal{
+    background:#fff;border-radius:20px;padding:28px;
+    max-width:520px;width:92%;
+    box-shadow:0 20px 60px rgba(0,0,0,.25);
+    animation: popIn .35s cubic-bezier(.34,1.56,.64,1);
+    border:2px solid var(--green-300);
+    max-height:90vh;overflow-y:auto;
+  }
+  @keyframes popIn{from{opacity:0;transform:scale(.85)}to{opacity:1;transform:scale(1)}}
+  .modal.success{text-align:center}
+  .success-icon{
+    width:78px;height:78px;border-radius:50%;
+    background:linear-gradient(135deg,var(--green-500),var(--green-600));
+    display:grid;place-items:center;margin:0 auto 16px;
+    font-size:40px;color:#fff;
+    box-shadow:0 10px 30px rgba(16,185,129,.4);
+    animation: bounce .6s ease;
+  }
+  @keyframes bounce{0%{transform:scale(0)}60%{transform:scale(1.15)}100%{transform:scale(1)}}
+  .modal h3{margin:0 0 6px;font-size:20px;color:var(--green-700)}
+  .modal p{color:var(--muted);margin:0 0 16px;line-height:1.5;font-size:14px}
+  .modal-summary{
+    background:var(--yellow-50);border:1px dashed var(--yellow-400);
+    border-radius:12px;padding:14px;text-align:left;margin-bottom:18px;
+    font-size:13px;
+  }
+  .modal-summary .row{display:flex;justify-content:space-between;padding:3px 0}
+  .modal-summary .row strong{color:var(--ink)}
+  .modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
+  .modal-close{background:transparent;border:none;font-size:22px;cursor:pointer;color:var(--muted);padding:4px 8px;border-radius:6px}
+  .modal-close:hover{background:var(--red-50);color:var(--red-700)}
+
+  /* TABLE MANAGER */
+  .table-manager-list{display:flex;flex-direction:column;gap:8px;margin-bottom:16px;max-height:260px;overflow-y:auto;padding-right:4px}
+  .table-manager-item{
+    display:flex;align-items:center;gap:10px;
+    padding:10px 12px;border-radius:10px;
+    background:#F0FBF5;border:1px solid var(--line);
+    font-size:13px;
+  }
+  .table-manager-item .t-id{
+    font-weight:700;color:var(--green-700);min-width:40px;
+  }
+  .table-manager-item .t-info{flex:1;display:flex;gap:10px;flex-wrap:wrap}
+  .table-manager-item .t-info span{display:inline-flex;align-items:center;gap:4px}
+  .table-manager-item select, .table-manager-item input{
+    padding:5px 8px;border-radius:6px;border:1px solid var(--line);
+    font-size:12px;font-family:inherit;
+  }
+  .table-manager-item input{width:55px}
+  .add-table-row{
+    display:grid;grid-template-columns: 60px 80px 1fr auto;gap:8px;
+    padding:10px;background:var(--yellow-50);border-radius:10px;
+    border:1.5px dashed var(--yellow-400);
+  }
+  .add-table-row input, .add-table-row select{
+    padding:7px 9px;border-radius:6px;border:1px solid var(--line);
+    font-size:13px;font-family:inherit;
+  }
+
+  /* TOAST */
+  .toast{
+    position:fixed;bottom:24px;right:24px;
+    background:var(--ink);color:#fff;
+    padding:12px 18px;border-radius:10px;
+    box-shadow:0 10px 30px rgba(0,0,0,.25);
+    font-size:13px;font-weight:500;
+    display:none;align-items:center;gap:8px;
+    animation: slideUp .3s ease;z-index:200;
+  }
+  .toast.active{display:flex}
+  @keyframes slideUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+
+  /* LOADING */
+  .spinner{
+    width:14px;height:14px;border:2px solid rgba(255,255,255,.3);
+    border-top-color:#fff;border-radius:50%;
+    animation:spin .7s linear infinite;
+  }
+  @keyframes spin{to{transform:rotate(360deg)}}
+
+  /* EDITING BANNER */
+  .editing-banner{
+    background:var(--yellow-100);border:1.5px solid var(--yellow-400);
+    color:#92400E;padding:10px 14px;border-radius:10px;
+    margin-bottom:14px;font-size:13px;font-weight:600;
+    display:none;align-items:center;justify-content:space-between;gap:10px;
+  }
+  .editing-banner.active{display:flex}
+  .editing-banner button{
+    background:transparent;border:none;cursor:pointer;
+    color:#92400E;font-weight:700;font-size:13px;
+    padding:4px 8px;border-radius:6px;
+  }
+  .editing-banner button:hover{background:rgba(146,64,0,.1)}
+
+  /* ============ PRINT STYLES ============ */
+  @media print {
+    body{background:#fff !important}
+    header, .page-title, .grid > div:first-child, .toast, .modal-overlay,
+    .res-actions, .header-right, .quick-stats, .editing-banner{display:none !important}
+    main{padding:0;max-width:100%}
+    .card{box-shadow:none;border:none;padding:0}
+    .grid{display:block}
+    .print-header{display:block !important;text-align:center;margin-bottom:20px;border-bottom:3px solid var(--green-600);padding-bottom:16px}
+    .print-header h1{margin:0;font-size:32px;letter-spacing:4px;color:var(--green-700)}
+    .print-header .date{font-size:14px;color:var(--muted);margin-top:4px}
+    .print-section{margin-bottom:22px;page-break-inside:avoid}
+    .print-section h2{
+      font-size:18px;margin:0 0 10px;padding:8px 12px;
+      background:var(--green-50);border-left:4px solid var(--green-600);
+      border-radius:6px;
+    }
+    .reservation{background:#fff !important;border:1px solid #ddd !important;page-break-inside:avoid}
+    .reservations-list{max-height:none !important;overflow:visible !important}
+  }
+  .print-header{display:none}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <div class="logo-badge">🍽️</div>
+    <div class="logo-text">
+      <h1>LOFT</h1>
+      <div class="sub">GESTIONE PRENOTAZIONI</div>
+    </div>
+  </div>
+  <div class="header-right">
+    <button class="header-btn" onclick="openTableManager()">🪑 Gestisci tavoli</button>
+    <button class="header-btn" onclick="saveBackup()">💾 Salva backup</button>
+    <button class="header-btn accent" onclick="printPDF()">🖨️ Stampa PDF</button>
+    <div class="user-chip">👤 <strong>David</strong></div>
+  </div>
+</header>
+
+<main>
+  <div class="print-header">
+    <h1>LOFT</h1>
+    <div class="date" id="printDate"></div>
+  </div>
+
+  <div class="page-title">
+    <div>
+      <h2>Prenotazioni del giorno</h2>
+      <p>Inserisci una nuova prenotazione e organizza al meglio le sale.</p>
+    </div>
+    <div class="quick-stats">
+      <div class="stat green"><div class="label">Tavoli liberi</div><div class="value" id="statFree">0</div></div>
+      <div class="stat yellow"><div class="label">Prenotazioni</div><div class="value" id="statBookings">0</div></div>
+      <div class="stat green"><div class="label">Coperti</div><div class="value" id="statGuests">0</div></div>
+    </div>
+  </div>
+
+  <div class="grid">
+    <!-- LEFT: FORM + TABLES -->
+    <div>
+      <div class="card">
+        <h3 id="formTitle">📝 Nuova prenotazione</h3>
+        <div class="sub" id="formSub">Compila i dati del cliente e seleziona un tavolo libero.</div>
+
+        <div class="editing-banner" id="editingBanner">
+          <span>✏️ Stai modificando una prenotazione</span>
+          <button onclick="cancelEdit()">Annulla modifica</button>
+        </div>
+
+        <form id="bookingForm">
+          <div class="form-grid">
+            <div class="field">
+              <label for="name">Nome e cognome *</label>
+              <input type="text" id="name" required placeholder="Es. Mario Rossi"/>
+            </div>
+            <div class="field">
+              <label for="phone">Telefono *</label>
+              <input type="tel" id="phone" required placeholder="Es. 333 1234567"/>
+            </div>
+            <div class="field">
+              <label for="email">Email</label>
+              <input type="email" id="email" placeholder="cliente@email.it"/>
+            </div>
+            <div class="field">
+              <label for="guests">Numero commensali *</label>
+              <input type="number" id="guests" min="1" max="40" required placeholder="Es. 4"/>
+            </div>
+            <div class="field">
+              <label for="date">Data *</label>
+              <input type="date" id="date" required/>
+            </div>
+            <div class="field">
+              <label for="time">Orario *</label>
+              <input type="time" id="time" required/>
+            </div>
+            <div class="field full">
+              <label>Location *</label>
+              <div class="location-chips" id="locationChips">
+                <div class="loc-chip active" data-loc="interno">🏠 Interno</div>
+                <div class="loc-chip" data-loc="esterno">🌳 Esterno</div>
+                <div class="loc-chip" data-loc="veranda">🏖️ Veranda</div>
+              </div>
+            </div>
+            <div class="field full">
+              <label for="allergies">Allergie e intolleranze</label>
+              <textarea id="allergies" placeholder="Es. glutine, lattosio, frutta a guscio..."></textarea>
+            </div>
+            <div class="field full">
+              <label for="notes">Note aggiuntive</label>
+              <textarea id="notes" placeholder="Es. tavolo vicino alla finestra, seggiolone, occasione speciale..."></textarea>
+            </div>
+          </div>
+
+          <div class="tables-section">
+            <h4 style="margin:0 0 6px;font-size:14px">🪑 Scegli un tavolo</h4>
+            <div class="sub" style="margin-bottom:10px">Clicca su un tavolo libero della location selezionata.</div>
+            <div class="tables-legend">
+              <div class="legend-item"><span class="legend-dot free"></span>Libero</div>
+              <div class="legend-item"><span class="legend-dot busy"></span>Occupato</div>
+              <div class="legend-item"><span class="legend-dot closed"></span>Chiuso</div>
+            </div>
+            <div class="tables-grid" id="tablesGrid"></div>
+            <div id="selectedTableInfo" style="margin-top:10px;font-size:12px;color:var(--muted)"></div>
+          </div>
+
+          <div class="form-actions">
+            <button type="button" class="btn btn-ghost" onclick="resetForm()">Pulisci</button>
+            <div class="form-actions-right">
+              <button type="submit" class="btn btn-primary" id="submitBtn">
+                <span id="submitText">Conferma prenotazione</span>
+              </button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- RIGHT: RESERVATIONS -->
+    <div class="card">
+      <h3>📋 Prenotazioni di oggi</h3>
+      <div class="sub">Tutte le prenotazioni della giornata, modificabili o eliminabili.</div>
+      <div class="reservations-list" id="reservationsList"></div>
+    </div>
+  </div>
+</main>
+
+<!-- SUCCESS MODAL -->
+<div class="modal-overlay" id="successModal">
+  <div class="modal success">
+    <div class="success-icon">✓</div>
+    <h3 id="successTitle">Prenotazione confermata!</h3>
+    <p id="successSub">La prenotazione è stata registrata con successo. Ecco il riepilogo:</p>
+    <div class="modal-summary" id="modalSummary"></div>
+    <button class="btn btn-primary" onclick="closeModal('successModal')" style="width:100%">Perfetto, chiudi</button>
+  </div>
+</div>
+
+<!-- TABLE MANAGER MODAL -->
+<div class="modal-overlay" id="tableManagerModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 style="margin:0">🪑 Gestione tavoli</h3>
+      <button class="modal-close" onclick="closeModal('tableManagerModal')">✕</button>
+    </div>
+    <p>Aggiungi, modifica o elimina i tavoli del locale. Ogni tavolo può essere assegnato a una location.</p>
+
+    <div class="table-manager-list" id="tableManagerList"></div>
+
+    <h4 style="margin:14px 0 8px;font-size:14px">➕ Aggiungi nuovo tavolo</h4>
+    <div class="add-table-row">
+      <input type="number" id="newTableSeats" min="1" max="20" placeholder="Posti"/>
+      <select id="newTableLocation">
+        <option value="interno">🏠 Interno</option>
+        <option value="esterno">🌳 Esterno</option>
+        <option value="veranda">🏖️ Veranda</option>
+      </select>
+      <select id="newTableStatus">
+        <option value="free">✅ Libero</option>
+        <option value="closed">⛔ Chiuso</option>
+      </select>
+      <button type="button" class="btn btn-primary" onclick="addTable()">Aggiungi</button>
+    </div>
+
+    <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:18px">
+      <button class="btn btn-ghost" onclick="closeModal('tableManagerModal')">Chiudi</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+  // ============ STATE ============
+  const LOCATIONS = {
+    interno: {label:'Interno', icon:'🏠'},
+    esterno: {label:'Esterno', icon:'🌳'},
+    veranda: {label:'Veranda', icon:'🏖️'}
+  };
+
+  let tables = JSON.parse(localStorage.getItem('loft_tables') || 'null') || [
+    {id:1, seats:2, status:'free', location:'interno'},
+    {id:2, seats:2, status:'free', location:'interno'},
+    {id:3, seats:4, status:'free', location:'interno'},
+    {id:4, seats:4, status:'free', location:'veranda'},
+    {id:5, seats:4, status:'busy', location:'interno'},
+    {id:6, seats:6, status:'free', location:'esterno'},
+    {id:7, seats:6, status:'free', location:'esterno'},
+    {id:8, seats:6, status:'closed', location:'veranda'},
+    {id:9, seats:8, status:'free', location:'interno'},
+    {id:10, seats:8, status:'busy', location:'esterno'},
+    {id:11, seats:2, status:'free', location:'veranda'},
+    {id:12, seats:4, status:'free', location:'veranda'},
+  ];
+
+  let reservations = JSON.parse(localStorage.getItem('loft_reservations') || '[]');
+  let selectedTableId = null;
+  let selectedLocation = 'interno';
+  let editingId = null;
+
+  // ============ INIT ============
+  function init(){
+    const today = new Date();
+    const todayStr = today.toISOString().split('T')[0];
+    document.getElementById('date').value = todayStr;
+    document.getElementById('time').value = '20:00';
+    document.getElementById('printDate').textContent =
+      'Prenotazioni del ' + today.toLocaleDateString('it-IT',{weekday:'long', day:'numeric', month:'long', year:'numeric'});
+
+    // location chips
+    document.querySelectorAll('#locationChips .loc-chip').forEach(chip=>{
+      chip.addEventListener('click', ()=>{
+        document.querySelectorAll('#locationChips .loc-chip').forEach(c=>c.classList.remove('active'));
+        chip.classList.add('active');
+        selectedLocation = chip.dataset.loc;
+        selectedTableId = null;
+        document.getElementById('selectedTableInfo').innerHTML = '';
+        renderTables();
+      });
+    });
+
+    renderTables();
+    renderReservations();
+    updateStats();
+  }
+
+  // ============ TABLES ============
+  function renderTables(){
+    const grid = document.getElementById('tablesGrid');
+    grid.innerHTML = '';
+    const visible = tables.filter(t=>t.location === selectedLocation);
+
+    if(visible.length === 0){
+      grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:20px;color:var(--muted);font-size:13px">
+        Nessun tavolo in questa location. <a href="#" onclick="openTableManager();return false;" style="color:var(--green-700);font-weight:600">Aggiungine uno</a>
+      </div>`;
+      return;
+    }
+
+    visible.forEach(t=>{
+      const el = document.createElement('div');
+      el.className = `table-cell ${t.status}`;
+      if(t.id === selectedTableId) el.classList.add('selected');
+      el.innerHTML = `
+        <div>T${t.id}</div>
+        <div class="seats">${t.seats} posti</div>
+      `;
+      if(t.status === 'free'){
+        el.addEventListener('click', ()=> selectTable(t.id));
+      } else {
+        el.addEventListener('click', ()=>{
+          if(t.status === 'closed') showToast('⛔ Questo tavolo è chiuso');
+          else showToast('🟡 Questo tavolo è già occupato');
+        });
+      }
+      grid.appendChild(el);
+    });
+  }
+
+  function selectTable(id){
+    selectedTableId = id;
+    renderTables();
+    const t = tables.find(x=>x.id===id);
+    document.getElementById('selectedTableInfo').innerHTML =
+      `✅ Selezionato: <strong style="color:var(--green-700)">Tavolo ${id}</strong> · ${t.seats} posti · ${LOCATIONS[t.location].icon} ${LOCATIONS[t.location].label}`;
+  }
+
+  // ============ TABLE MANAGER ============
+  function openTableManager(){
+    renderTableManager();
+    document.getElementById('tableManagerModal').classList.add('active');
+  }
+
+  function renderTableManager(){
+    const list = document.getElementById('tableManagerList');
+    if(tables.length === 0){
+      list.innerHTML = `<div style="text-align:center;padding:20px;color:var(--muted);font-size:13px">Nessun tavolo configurato</div>`;
+      return;
+    }
+    list.innerHTML = tables.map(t=>`
+      <div class="table-manager-item">
+        <div class="t-id">T${t.id}</div>
+        <div class="t-info">
+          <span><input type="number" min="1" max="40" value="${t.seats}" onchange="updateTable(${t.id},'seats',parseInt(this.value))"/> posti</span>
+          <span>
+            <select onchange="updateTable(${t.id},'location',this.value)">
+              <option value="interno" ${t.location==='interno'?'selected':''}>🏠 Interno</option>
+              <option value="esterno" ${t.location==='esterno'?'selected':''}>🌳 Esterno</option>
+              <option value="veranda" ${t.location==='veranda'?'selected':''}>🏖️ Veranda</option>
+            </select>
+          </span>
+          <span>
+            <select onchange="updateTable(${t.id},'status',this.value)">
+              <option value="free" ${t.status==='free'?'selected':''}>✅ Libero</option>
+              <option value="busy" ${t.status==='busy'?'selected':''}>🟡 Occupato</option>
+              <option value="closed" ${t.status==='closed'?'selected':''}>⛔ Chiuso</option>
+            </select>
+          </span>
+        </div>
+        <button class="icon-btn delete" onclick="deleteTable(${t.id})" title="Elimina">🗑️</button>
+      </div>
+    `).join('');
+  }
+
+  function updateTable(id, field, value){
+    const t = tables.find(x=>x.id===id);
+    if(t){ t[field] = value; saveTables(); renderTables(); updateStats(); }
+  }
+
+  function deleteTable(id){
+    if(!confirm(`Eliminare il tavolo T${id}?`)) return;
+    tables = tables.filter(t=>t.id !== id);
+    if(selectedTableId === id){ selectedTableId = null; document.getElementById('selectedTableInfo').innerHTML=''; }
+    saveTables();
+    renderTableManager();
+    renderTables();
+    updateStats();
+    showToast('🗑️ Tavolo eliminato');
+  }
+
+  function addTable(){
+    const seats = parseInt(document.getElementById('newTableSeats').value);
+    const location = document.getElementById('newTableLocation').value;
+    const status = document.getElementById('newTableStatus').value;
+    if(!seats || seats < 1){ showToast('⚠️ Inserisci un numero di posti valido'); return; }
+    const newId = tables.length > 0 ? Math.max(...tables.map(t=>t.id)) + 1 : 1;
+    tables.push({id:newId, seats, location, status});
+    saveTables();
+    renderTableManager();
+    renderTables();
+    updateStats();
+    document.getElementById('newTableSeats').value = '';
+    showToast(`✅ Tavolo T${newId} aggiunto`);
+  }
+
+  function saveTables(){
+    localStorage.setItem('loft_tables', JSON.stringify(tables));
+  }
+
+  // ============ RESERVATIONS ============
+  function renderReservations(){
+    const list = document.getElementById('reservationsList');
+    const today = new Date().toISOString().split('T')[0];
+    const todayRes = reservations
+      .filter(r=>r.date === today)
+      .sort((a,b)=> a.time.localeCompare(b.time));
+
+    if(todayRes.length === 0){
+      list.innerHTML = `
+        <div class="empty-state">
+          <div class="icon">📭</div>
+          <div style="font-weight:600;color:var(--ink);margin-bottom:4px">Nessuna prenotazione oggi</div>
+          <div style="font-size:13px">Inserisci la prima prenotazione usando il modulo a sinistra.</div>
+        </div>
+      `;
+      return;
+    }
+
+    list.innerHTML = todayRes.map(r=>{
+      const tags = [];
+      const loc = LOCATIONS[r.location] || LOCATIONS.interno;
+      tags.push(`<span class="tag location">${loc.icon} ${loc.label}</span>`);
+      if(r.allergies) tags.push(`<span class="tag allergy">⚠️ ${escapeHtml(r.allergies)}</span>`);
+      if(r.notes) tags.push(`<span class="tag note">📝 ${escapeHtml(r.notes)}</span>`);
+      if(r.joinedTables && r.joinedTables.length>1){
+        tags.push(`<span class="tag joined">🔗 Tavoli uniti: ${r.joinedTables.map(t=>'T'+t).join(', ')}</span>`);
+      } else {
+        tags.push(`<span class="tag table-tag">🪑 Tavolo ${r.tableId}</span>`);
+      }
+      return `
+        <div class="reservation">
+          <div class="time-badge">${r.time}</div>
+          <div class="res-info">
+            <div class="res-name">
+              ${escapeHtml(r.name)}
+              <span style="font-size:11px;color:var(--muted);font-weight:500">· ${r.guests} ${r.guests===1?'persona':'persone'}</span>
+            </div>
+            <div class="res-meta">
+              <span>📞 ${escapeHtml(r.phone)}</span>
+              ${r.email?`<span>✉️ ${escapeHtml(r.email)}</span>`:''}
+            </div>
+            <div class="res-tags">${tags.join('')}</div>
+          </div>
+          <div class="res-actions">
+            <button class="icon-btn" onclick="editReservation('${r.id}')" title="Modifica">✏️</button>
+            <button class="icon-btn delete" onclick="deleteReservation('${r.id}')" title="Elimina">🗑️</button>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  function editReservation(id){
+    const r = reservations.find(x=>x.id===id);
+    if(!r) return;
+    editingId = id;
+
+    document.getElementById('name').value = r.name;
+    document.getElementById('phone').value = r.phone;
+    document.getElementById('email').value = r.email || '';
+    document.getElementById('guests').value = r.guests;
+    document.getElementById('date').value = r.date;
+    document.getElementById('time').value = r.time;
+    document.getElementById('allergies').value = r.allergies || '';
+    document.getElementById('notes').value = r.notes || '';
+
+    // set location
+    selectedLocation = r.location || 'interno';
+    document.querySelectorAll('#locationChips .loc-chip').forEach(c=>{
+      c.classList.toggle('active', c.dataset.loc === selectedLocation);
+    });
+
+    selectedTableId = r.tableId;
+    renderTables();
+
+    const t = tables.find(x=>x.id===r.tableId);
+    document.getElementById('selectedTableInfo').innerHTML = t ?
+      `✅ Selezionato: <strong style="color:var(--green-700)">Tavolo ${r.tableId}</strong> · ${t.seats} posti · ${LOCATIONS[t.location].icon} ${LOCATIONS[t.location].label}` : '';
+
+    document.getElementById('formTitle').textContent = '✏️ Modifica prenotazione';
+    document.getElementById('formSub').textContent = 'Aggiorna i dati e conferma le modifiche.';
+    document.getElementById('submitText').textContent = 'Aggiorna prenotazione';
+    document.getElementById('editingBanner').classList.add('active');
+
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+
+  function cancelEdit(){
+    editingId = null;
+    resetForm();
+  }
+
+  function deleteReservation(id){
+    if(!confirm('Vuoi eliminare questa prenotazione?')) return;
+    const r = reservations.find(x=>x.id===id);
+    if(r){
+      // libera i tavoli
+      if(r.joinedTables && r.joinedTables.length>1){
+        r.joinedTables.forEach(tid=>{
+          const t = tables.find(x=>x.id===tid);
+          if(t) t.status = 'free';
+        });
+      } else {
+        const t = tables.find(x=>x.id===r.tableId);
+        if(t) t.status = 'free';
+      }
+    }
+    reservations = reservations.filter(r=>r.id !== id);
+    saveAndRefresh();
+    showToast('🗑️ Prenotazione eliminata');
+  }
+
+  // ============ FORM SUBMIT ============
+  document.getElementById('bookingForm').addEventListener('submit', async (e)=>{
+    e.preventDefault();
+    if(!selectedTableId){
+      showToast('⚠️ Seleziona un tavolo libero');
+      return;
+    }
+
+    const btn = document.getElementById('submitBtn');
+    const txt = document.getElementById('submitText');
+    btn.disabled = true;
+    txt.innerHTML = '<span class="spinner"></span> Salvataggio...';
+
+    await new Promise(r=>setTimeout(r,600));
+
+    const data = {
+      id: editingId || ('r_' + Date.now()),
+      name: document.getElementById('name').value.trim(),
+      phone: document.getElementById('phone').value.trim(),
+      email: document.getElementById('email').value.trim(),
+      guests: parseInt(document.getElementById('guests').value),
+      date: document.getElementById('date').value,
+      time: document.getElementById('time').value,
+      allergies: document.getElementById('allergies').value.trim(),
+      notes: document.getElementById('notes').value.trim(),
+      tableId: selectedTableId,
+      location: selectedLocation,
+      joinedTables: []
+    };
+
+    // Se in modifica, libera prima i tavoli vecchi
+    if(editingId){
+      const old = reservations.find(r=>r.id===editingId);
+      if(old){
+        if(old.joinedTables && old.joinedTables.length>1){
+          old.joinedTables.forEach(tid=>{
+            const t = tables.find(x=>x.id===tid);
+            if(t && tid !== data.tableId) t.status = 'free';
+          });
+        } else if(old.tableId !== data.tableId){
+          const t = tables.find(x=>x.id===old.tableId);
+          if(t) t.status = 'free';
+        }
+      }
+    }
+
+    // Logica unione tavoli
+    const selectedTable = tables.find(t=>t.id===data.tableId);
+    if(data.guests > selectedTable.seats){
+      const needed = data.guests - selectedTable.seats;
+      const candidates = tables.filter(t=> t.status==='free' && t.id!==data.tableId && t.location===data.location)
+        .sort((a,b)=> Math.abs(a.seats-needed) - Math.abs(b.seats-needed));
+      if(candidates.length>0){
+        data.joinedTables = [data.tableId, candidates[0].id];
+        candidates[0].status = 'busy';
+      } else {
+        showToast('⚠️ Posti insufficienti in questa location');
+      }
+    }
+    selectedTable.status = 'busy';
+
+    if(editingId){
+      reservations = reservations.map(r=> r.id===editingId ? data : r);
+      showToast('✅ Prenotazione aggiornata');
+    } else {
+      reservations.push(data);
+    }
+
+    saveAndRefresh();
+    showSuccessModal(data, !!editingId);
+    resetForm();
+    btn.disabled = false;
+    txt.textContent = 'Conferma prenotazione';
+  });
+
+  function resetForm(){
+    document.getElementById('bookingForm').reset();
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('date').value = today;
+    document.getElementById('time').value = '20:00';
+    selectedTableId = null;
+    editingId = null;
+    selectedLocation = 'interno';
+    document.querySelectorAll('#locationChips .loc-chip').forEach(c=>{
+      c.classList.toggle('active', c.dataset.loc === 'interno');
+    });
+    document.getElementById('selectedTableInfo').innerHTML = '';
+    document.getElementById('formTitle').textContent = '📝 Nuova prenotazione';
+    document.getElementById('formSub').textContent = 'Compila i dati del cliente e seleziona un tavolo libero.';
+    document.getElementById('submitText').textContent = 'Conferma prenotazione';
+    document.getElementById('editingBanner').classList.remove('active');
+    renderTables();
+  }
+
+  // ============ MODAL ============
+  function showSuccessModal(data, isEdit){
+    document.getElementById('successTitle').textContent = isEdit ? 'Prenotazione aggiornata!' : 'Prenotazione confermata!';
+    document.getElementById('successSub').textContent = isEdit ?
+      'Le modifiche sono state salvate. Ecco il riepilogo:' :
+      'La prenotazione è stata registrata con successo. Ecco il riepilogo:';
+    const summary = document.getElementById('modalSummary');
+    const loc = LOCATIONS[data.location];
+    summary.innerHTML = `
+      <div class="row"><span>Cliente:</span><strong>${escapeHtml(data.name)}</strong></div>
+      <div class="row"><span>Data:</span><strong>${formatDate(data.date)}</strong></div>
+      <div class="row"><span>Orario:</span><strong>${data.time}</strong></div>
+      <div class="row"><span>Persone:</span><strong>${data.guests}</strong></div>
+      <div class="row"><span>Location:</span><strong>${loc.icon} ${loc.label}</strong></div>
+      <div class="row"><span>Tavolo:</span><strong>${data.joinedTables.length>1 ? data.joinedTables.map(t=>'T'+t).join(' + ') : 'T'+data.tableId}</strong></div>
+      ${data.allergies?`<div class="row"><span>Allergie:</span><strong>${escapeHtml(data.allergies)}</strong></div>`:''}
+    `;
+    document.getElementById('successModal').classList.add('active');
+  }
+
+  function closeModal(id){
+    document.getElementById(id).classList.remove('active');
+  }
+  document.querySelectorAll('.modal-overlay').forEach(ov=>{
+    ov.addEventListener('click', (e)=>{
+      if(e.target === ov) ov.classList.remove('active');
+    });
+  });
+
+  // ============ STATS ============
+  function updateStats(){
+    const today = new Date().toISOString().split('T')[0];
+    const todayRes = reservations.filter(r=>r.date === today);
+    document.getElementById('statFree').textContent = tables.filter(t=>t.status==='free').length;
+    document.getElementById('statBookings').textContent = todayRes.length;
+    document.getElementById('statGuests').textContent = todayRes.reduce((s,r)=>s+r.guests,0);
+  }
+
+  // ============ BACKUP & PRINT ============
+  function saveBackup(){
+    const data = {
+      exportDate: new Date().toISOString(),
+      restaurant: 'LOFT',
+      tables: tables,
+      reservations: reservations
+    };
+    const blob = new Blob([JSON.stringify(data, null, 2)], {type:'application/json'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    const date = new Date().toISOString().split('T')[0];
+    a.download = `loft_backup_${date}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+    showToast('💾 Backup salvato');
+  }
+
+  function printPDF(){
+    const today = new Date().toISOString().split('T')[0];
+    const todayRes = reservations.filter(r=>r.date === today).sort((a,b)=> a.time.localeCompare(b.time));
+    if(todayRes.length === 0){
+      showToast('📭 Nessuna prenotazione da stampare oggi');
+      return;
+    }
+    // aggiorna data stampa
+    document.getElementById('printDate').textContent =
+      'Prenotazioni del ' + new Date().toLocaleDateString('it-IT',{weekday:'long', day:'numeric', month:'long', year:'numeric'});
+    renderReservations();
+    setTimeout(()=> window.print(), 150);
+  }
+
+  // ============ UTILS ============
+  function saveAndRefresh(){
+    localStorage.setItem('loft_reservations', JSON.stringify(reservations));
+    saveTables();
+    renderReservations();
+    renderTables();
+    updateStats();
+  }
+
+  function escapeHtml(str){
+    if(!str) return '';
+    return str.replace(/[&<>"']/g, m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m]));
+  }
+
+  function formatDate(iso){
+    const d = new Date(iso);
+    return d.toLocaleDateString('it-IT',{weekday:'short', day:'numeric', month:'short'});
+  }
+
+  function showToast(msg){
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('active');
+    clearTimeout(t._timer);
+    t._timer = setTimeout(()=> t.classList.remove('active'), 2500);
+  }
+
+  init();
+</script>
+</body>
+</html>
